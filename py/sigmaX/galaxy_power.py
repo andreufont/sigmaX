@@ -1,37 +1,37 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sigmaX import cosmo
+from sigmaX import cosmology
 
-def get_galP_Mpc(kt,kp,cosmo_temp,params={}):
+def get_galP_Mpc(kt,kp,cosmo,params={}):
     """Compute galaxy power spectrum, in Mpc.
-        - cosmo_temp will be used as a template for P(z,k).
+        - cosmo will be used as a template for P(z,k).
         - params can modify the values of 'f sigma_8' and 'b sigma_8'.
     """
     
-    z=cosmo_temp['z']
-    b=cosmo_temp['b']
+    z=cosmo['z']
+    b=cosmo['b']
     
     # compute (k,mu) from (kt,kp)
     k=np.sqrt(kt**2+kp**2)
     mu=kp/k
     # interpolate to input k [1/Mpc]
-    P=cosmo_temp['cambP'].P(z,k)
+    P=cosmo['cambP'].P(z,k)
     
     # compute P / sigma_8^2
-    P_sig8 = P/cosmo_temp['sig8']**2
+    P_sig8 = P/cosmo['sig8']**2
     
     # compute b sig8
     if 'bsig8' in params:
         bsig8 = params['bsig8']
     else:
-        bsig8 = b*cosmo_temp['sig8']
+        bsig8 = b*cosmo['sig8']
     #print('b sigma_8 = {}'.format(bsig8))
     
     # compute f sig8
     if 'fsig8' in params:
         fsig8 = params['fsig8']
     else:
-        fsig8 = cosmo_temp['f']*cosmo_temp['sig8']
+        fsig8 = cosmo['f']*cosmo['sig8']
     #print('f sigma_8 = {}'.format(fsig8))
     
     # apply Kaiser model
@@ -67,7 +67,7 @@ def get_galP_obs(qt,qp,cosmo_coord,cosmo_temp,params={}):
     kp=qp/DH/(1+z)
     
     # call galaxy power spectrum in comoving coordinates
-    galP=get_galP_Mpc(kt,kp,cosmo_temp=cosmo_temp,params=params)
+    galP=get_galP_Mpc(kt,kp,cosmo=cosmo_temp,params=params)
     
     # normalize with volume factor (DV is volume, nothing to do with iso BAO)
     DV=DH*DA*DA*(1+z)**3
@@ -82,7 +82,7 @@ def plot_galP_Mpc(cosmo_temp,k=None):
     if k is None:
         k=np.linspace(0.001,1.0,1000)
 
-    plt.loglog(k,cosmo.get_linP(cosmo_temp,k),label='linear')
+    plt.loglog(k,cosmology.get_linP(cosmo_temp,k),label='linear')
     plt.loglog(k,get_galP_Mpc(k,0.0,cosmo_temp),label=r'$\mu=0$')
     plt.loglog(k,get_galP_Mpc(0.0,k,cosmo_temp),label=r'$\mu=1$')
     plt.legend()
